@@ -1,6 +1,6 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "byrdocs-wiki"
-main = "src/index.ts"
+main = "src/index.tsx"
 compatibility_date = "2024-11-12"
 compatibility_flags = ["nodejs_compat"]
 
