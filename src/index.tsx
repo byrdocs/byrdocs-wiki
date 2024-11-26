@@ -7,6 +7,8 @@ import { buptSubnets } from '../bupt';
 import { Login } from './pages/login';
 import { login } from './login';
 
+import { is_search_bot } from './search_bot';
+
 const ipChecker = createChecker(buptSubnets);
 
 export async function setCookie(c: Context) {
@@ -56,6 +58,9 @@ export default new Hono<{
 			token !== c.env.TOKEN &&
 			(!cookie || isNaN(parseInt(cookie)) || Date.now() - parseInt(cookie) > 2592000 * 1000)
 		) {
+			if (await is_search_bot(c.req.header("user-agent"), ip)) {
+				await next();
+			}
 			const toq = new URL(c.req.url).searchParams
 			if ((c.req.path === "" || c.req.path === '/') && toq.size === 0) return c.redirect("/login")
 			const to = c.req.path + (toq.size > 0 ? "?" + toq.toString() : "")
