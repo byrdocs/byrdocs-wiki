@@ -5,9 +5,9 @@ import { createChecker } from 'is-in-subnet';
 import { buptSubnets } from '../bupt';
 
 import { Login } from './pages/login';
-import { login } from './login';
 
 import { is_search_bot } from './search_bot';
+import { byrdocs_login } from '@byrdocs/bupt-auth';
 
 const ipChecker = createChecker(buptSubnets);
 
@@ -25,6 +25,7 @@ export default new Hono<{
 		JWT_SECRET: string
 		TOKEN: string
 		HEADER: string
+		OCR_TOKEN: string
 	}
 }>()
 	.get("/login", async c => {
@@ -40,7 +41,7 @@ export default new Hono<{
 			return c.render(<Login errorMsg="输入不合法" ip={ip} />)
 		}
 		try {
-			if (await login(studentId, password)) {
+			if (await byrdocs_login(studentId, password, c.env.OCR_TOKEN)) {
 				await setCookie(c)
 				return c.redirect(c.req.query("to") || "/")
 			}
@@ -96,7 +97,6 @@ export default new Hono<{
 			if (newLocation) {
 				header.set("location", newLocation.toString());
 			}
-			console.log(header)
 		}
 
 		return new Response(res.body, {
