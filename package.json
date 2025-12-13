@@ -16,7 +16,7 @@
     "vitest": "2.1.9"
   },
   "dependencies": {
-    "@byrdocs/bupt-auth": "npm:@jsr/byrdocs__bupt-auth@^0.1.5",
+    "@byrdocs/bupt-auth": "npm:@jsr/byrdocs__bupt-auth@^0.2.1",
     "hono": "^4.9.4",
     "is-in-subnet": "^4.0.1"
   },

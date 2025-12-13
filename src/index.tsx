@@ -7,7 +7,7 @@ import { buptSubnets } from '../bupt';
 import { Login } from './pages/login';
 
 import { is_search_bot } from './search_bot';
-import { byrdocs_login } from '@byrdocs/bupt-auth';
+import { login } from '@byrdocs/bupt-auth';
 
 const ipChecker = createChecker(buptSubnets);
 
@@ -41,7 +41,7 @@ export default new Hono<{
 			return c.render(<Login errorMsg="输入不合法" ip={ip} />)
 		}
 		try {
-			if (await byrdocs_login(studentId, password, c.env.OCR_TOKEN)) {
+			if (await login(studentId, password, { ocr: { token: c.env.OCR_TOKEN } })) {
 				await setCookie(c)
 				return c.redirect(c.req.query("to") || "/")
 			}
