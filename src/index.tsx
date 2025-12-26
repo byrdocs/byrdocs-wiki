@@ -1,15 +1,15 @@
 import { Hono, Context } from 'hono';
 import { getSignedCookie, setSignedCookie } from 'hono/cookie';
 
-import { createChecker } from 'is-in-subnet';
-import { buptSubnets } from '../bupt';
-
 import { Login } from './pages/login';
 
 import { is_search_bot } from './search_bot';
 import { login } from '@byrdocs/bupt-auth';
 
-const ipChecker = createChecker(buptSubnets);
+
+export function isBupt(cf?: CfProperties): boolean {
+    return cf ? (cf.asn === 24350 || cf.asn === 4538) : false;
+}
 
 export async function setCookie(c: Context) {
 	await setSignedCookie(c, "login", Date.now().toString(), c.env.JWT_SECRET, {
@@ -30,12 +30,12 @@ export default new Hono<{
 }>()
 	.get("/login", async c => {
 		const ip = c.req.header("CF-Connecting-IP") || "未知"
-		if (ip !== "未知" && ipChecker(ip)) return c.redirect(c.req.query("to") || "/")
+		if (ip !== "未知" && isBupt(c.req.raw.cf)) return c.redirect(c.req.query("to") || "/")
 		return c.render(<Login ip={ip} />)
 	})
 	.post("/login", async c => {
 		const ip = c.req.header("CF-Connecting-IP") || "未知"
-		if (ip !== "未知" && ipChecker(ip)) return c.redirect(c.req.query("to") || "/")
+		if (ip !== "未知" && isBupt(c.req.raw.cf)) return c.redirect(c.req.query("to") || "/")
 		const { studentId, password } = await c.req.parseBody()
 		if (typeof studentId !== "string" || typeof password !== "string") {
 			return c.render(<Login errorMsg="输入不合法" ip={ip} />)
@@ -55,7 +55,7 @@ export default new Hono<{
 		const ip = c.req.header("CF-Connecting-IP")
 		const cookie = await getSignedCookie(c, c.env.JWT_SECRET, "login")
 		if (
-			(!ip || !ipChecker(ip)) &&
+			(!ip || !isBupt(c.req.raw.cf)) &&
 			token !== c.env.TOKEN &&
 			(!cookie || isNaN(parseInt(cookie)) || Date.now() - parseInt(cookie) > 2592000 * 1000)
 		) {
