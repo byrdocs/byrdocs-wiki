@@ -23,9 +23,11 @@ export async function setCookie(c: Context) {
 export default new Hono<{
 	Bindings: {
 		JWT_SECRET: string
-		TOKEN: string
-		HEADER: string
+		WIKI_SITE_TOKEN: string
+		WIKI_SITE_HEADER: string
 		OCR_TOKEN: string
+		WIKI_SITE_HOSTNAME: string
+		WIKI_INTERNAL_SITE_HOSTNAME: string
 	}
 }>()
 	.get("/login", async c => {
@@ -56,7 +58,7 @@ export default new Hono<{
 		const cookie = await getSignedCookie(c, c.env.JWT_SECRET, "login")
 		if (
 			(!ip || !isBupt(c.req.raw.cf)) &&
-			token !== c.env.TOKEN &&
+			token !== c.env.WIKI_SITE_TOKEN &&
 			(!cookie || isNaN(parseInt(cookie)) || Date.now() - parseInt(cookie) > 2592000 * 1000)
 		) {
 			if (await is_search_bot(c.req.header("user-agent"), ip)) {
@@ -72,11 +74,11 @@ export default new Hono<{
 	.all(async c => {
 		const request = c.req.raw;
 		const url = new URL(request.url)
-		url.hostname = 'wiki-internal.byrdocs.org'
+		url.hostname = c.env.WIKI_INTERNAL_SITE_HOSTNAME;
 		url.port = '443';
 		url.protocol = 'https';
 		const reqHeaders = new Headers(request.headers)
-		reqHeaders.set("X-Byrdocs-Header", c.env.HEADER)
+		reqHeaders.set("X-Byrdocs-Header", c.env.WIKI_SITE_HEADER)
 		const res = await fetch(
 			url.toString(),
 			{
@@ -91,7 +93,7 @@ export default new Hono<{
 		const location = header.get("location");
 		if (location) {
 			const newLocation = new URL(location);
-			newLocation.hostname = 'wiki.byrdocs.org';
+			newLocation.hostname = c.env.WIKI_SITE_HOSTNAME;
 			newLocation.port = '443';
 			newLocation.protocol = 'https';
 			if (newLocation) {
