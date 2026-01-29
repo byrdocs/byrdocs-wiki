@@ -26,6 +26,8 @@ export default new Hono<{
 		TOKEN: string
 		HEADER: string
 		OCR_TOKEN: string
+		WIKI_SITE_HOSTNAME: string
+		WIKI_INTERNAL_SITE_HOSTNAME: string
 	}
 }>()
 	.get("/login", async c => {
@@ -72,7 +74,7 @@ export default new Hono<{
 	.all(async c => {
 		const request = c.req.raw;
 		const url = new URL(request.url)
-		url.hostname = 'wiki-internal.byrdocs.org'
+		url.hostname = c.env.WIKI_INTERNAL_SITE_HOSTNAME;
 		url.port = '443';
 		url.protocol = 'https';
 		const reqHeaders = new Headers(request.headers)
@@ -91,7 +93,7 @@ export default new Hono<{
 		const location = header.get("location");
 		if (location) {
 			const newLocation = new URL(location);
-			newLocation.hostname = 'wiki.byrdocs.org';
+			newLocation.hostname = c.env.WIKI_SITE_HOSTNAME;
 			newLocation.port = '443';
 			newLocation.protocol = 'https';
 			if (newLocation) {
